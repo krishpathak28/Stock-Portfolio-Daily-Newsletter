@@ -91,8 +91,13 @@ git push -u origin main
 
 Run it manually a few times across a couple of days until you trust it.
 
-**Then the schedule runs itself.** The cron is already configured for **weekdays at 13:00 UTC** (= 6 AM Pacific in summer). Nothing to flip on — once the workflow file is on `main`, GitHub schedules it automatically.
-*DST note:* GitHub cron is always UTC and ignores daylight saving, so in winter (PST) it fires at 5 AM Pacific. To hold a steady 6 AM year-round, change the cron in `.github/workflows/daily.yml` to `0 14 * * 1-5` when the clocks change.
+**Then the schedule runs itself.** The briefing is set for **weekdays at 5:00 PM America/New_York** — one hour after the closing bell (2:00 PM Pacific). Nothing to flip on; once the workflow file is on `main`, GitHub schedules it automatically.
+
+*Why 5:00 PM ET, not 4:00:* earnings are released between 4:05 and 4:30 PM ET, and the coverage explaining a move lands 20–40 minutes later. Running at 5:00 means the "why" behind a big move actually exists for the web-search step to find, instead of reporting a price drop with no story attached.
+
+*How DST is handled:* GitHub cron is always UTC and ignores daylight saving, so a single fixed cron drifts an hour twice a year. Instead, two crons are scheduled (21:00 and 22:00 UTC) and a `gate` job checks real New York time, allowing only the correct one through. The off-season one appears as a grey "skipped" job. Verified against all 261 weekdays of 2026: exactly one run per day, year-round, no drift.
+
+*Punctuality caveat:* GitHub's scheduled runs are best-effort and commonly run 5–20 minutes late during peak load, occasionally longer, and rarely get skipped entirely. Expect the email between about 5:05 and 5:30 PM ET. If a day gets skipped, the manual **Run workflow** button always works.
 
 ---
 

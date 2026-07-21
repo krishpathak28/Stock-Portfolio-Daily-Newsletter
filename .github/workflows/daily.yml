@@ -4,17 +4,49 @@ name: Daily Portfolio Briefing
 #   1. schedule  -- the daily cron below (weekdays; markets are closed weekends)
 #   2. workflow_dispatch -- a manual "Run workflow" button in the Actions tab,
 #      which is how you'll test the first few real runs before trusting the cron.
+#
+# TIMING: 5:00 PM America/New_York, weekdays -- one hour after the closing bell.
+# That buffer matters: earnings drop between 4:05 and 4:30 PM ET, and the
+# coverage explaining a move lands in the 20-40 min after. Running at 5:00
+# means the "why" actually exists for the web-search step to find.
+#
+# GitHub cron is ALWAYS UTC and does NOT observe daylight saving, so a single
+# fixed cron drifts by an hour twice a year. Fix: schedule BOTH possible UTC
+# times and let the `gate` job below check real New York time and allow only
+# the correct one through. The other shows up as a skipped (grey) job.
 on:
   schedule:
-    # 13:00 UTC on Mon-Fri.
-    # = 6:00 AM Pacific during PDT (summer). Note: GitHub cron is ALWAYS UTC and
-    #   does NOT follow daylight saving, so in PST (winter) this fires at 5:00 AM
-    #   Pacific. Adjust to '0 14 * * 1-5' if you want a steady 6 AM year-round.
-    - cron: "0 13 * * 1-5"
+    - cron: "0 21 * * 1-5"  # 5:00 PM ET while EDT (mid-Mar - early Nov)
+    - cron: "0 22 * * 1-5"  # 5:00 PM ET while EST (early Nov - mid-Mar)
   workflow_dispatch: {}
 
 jobs:
+  # Decides whether this particular trigger should actually run. Manual runs
+  # always pass; scheduled runs pass only when it's really 5 PM in New York.
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+    steps:
+      - id: check
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "Manual run -- proceeding."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          HOUR=$(TZ=America/New_York date +%H)
+          if [ "$HOUR" = "17" ]; then
+            echo "New York hour is $HOUR -- correct cron for the current DST state. Proceeding."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "New York hour is $HOUR, not 17 -- this is the off-season duplicate cron. Skipping."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          fi
+
   send-briefing:
+    needs: gate
+    if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo

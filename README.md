@@ -42,5 +42,5 @@ Actions, runs in Docker.
 
 ## Disclaimer
 
-Automated, AI-generated, for personal use. Not financial advice. Data may be
+Automated, AI-assisted, for personal use. Not financial advice. Data may be
 stale; analysis may contain errors. Verify before acting.

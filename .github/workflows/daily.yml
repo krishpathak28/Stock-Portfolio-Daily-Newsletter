@@ -50,7 +50,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
-        uses: actions/checkout@v4
+        # v5 targets Node.js 24. v4 ran on Node.js 20, which GitHub removes
+        # from runners on 2026-09-16 -- v4 would eventually break.
+        uses: actions/checkout@v5
 
       - name: Write portfolio.json from secret
         # This repo is PUBLIC, so real holdings are never committed (portfolio.json

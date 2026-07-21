@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+
+# Your REAL holdings never get committed -- the repo is public.
+# The committed portfolio.example.json documents the schema instead, and CI
+# writes the real file at runtime from the PORTFOLIO_JSON secret.
+portfolio.json
+.env
+.venv/
+venv/
+*.log
+.DS_Store
+sample_email.html

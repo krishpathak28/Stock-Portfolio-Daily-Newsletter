@@ -1,0 +1,59 @@
+name: Daily Portfolio Briefing
+
+# Two ways to run:
+#   1. schedule  -- the daily cron below (weekdays; markets are closed weekends)
+#   2. workflow_dispatch -- a manual "Run workflow" button in the Actions tab,
+#      which is how you'll test the first few real runs before trusting the cron.
+on:
+  schedule:
+    # 13:00 UTC on Mon-Fri.
+    # = 6:00 AM Pacific during PDT (summer). Note: GitHub cron is ALWAYS UTC and
+    #   does NOT follow daylight saving, so in PST (winter) this fires at 5:00 AM
+    #   Pacific. Adjust to '0 14 * * 1-5' if you want a steady 6 AM year-round.
+    - cron: "0 13 * * 1-5"
+  workflow_dispatch: {}
+
+jobs:
+  send-briefing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Write portfolio.json from secret
+        # This repo is PUBLIC, so real holdings are never committed (portfolio.json
+        # is gitignored; portfolio.example.json documents the schema). The real
+        # file is materialised here, at run time, from an encrypted secret and
+        # exists only for the life of this job.
+        env:
+          PORTFOLIO_JSON: ${{ secrets.PORTFOLIO_JSON }}
+        run: |
+          if [ -z "$PORTFOLIO_JSON" ]; then
+            echo "ERROR: PORTFOLIO_JSON secret is not set." >&2
+            echo "Add it under Settings > Secrets and variables > Actions." >&2
+            exit 1
+          fi
+          printf '%s' "$PORTFOLIO_JSON" > portfolio.json
+          # Validate it parses, and print ONLY a count -- never ticker names,
+          # because Actions logs on a public repo are publicly readable.
+          python3 -c "import json,sys; d=json.load(open('portfolio.json')); n=len(d['holdings']); print('portfolio.json OK:', n, 'holdings'); sys.exit(0 if n else 1)"
+
+      - name: Build the container image
+        run: docker build -t portfolio-newsletter .
+
+      - name: Run the pipeline
+        # Secrets are injected as env vars at run time -- never baked into the
+        # image. Configure these under: repo Settings > Secrets and variables >
+        # Actions > Repository secrets.
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+        run: |
+          docker run --rm \
+            -e ANTHROPIC_API_KEY \
+            -e TAVILY_API_KEY \
+            -e RESEND_API_KEY \
+            -e RECIPIENT_EMAIL \
+            portfolio-newsletter

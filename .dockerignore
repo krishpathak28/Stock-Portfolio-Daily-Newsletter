@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.env
+.git/
+.github/
+.gitignore
+README.md
+sample_email.html

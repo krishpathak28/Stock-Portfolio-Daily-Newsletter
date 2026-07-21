@@ -1,0 +1,15 @@
+{
+  "_comment": "Example holdings file. Copy this to portfolio.json and fill in your own positions. portfolio.json is gitignored so real holdings are never committed. Rules: ticker must match Yahoo Finance format (BRK-B, not BRK.B); cost_basis is your average price paid per share; sector is looked up live and is NOT stored here.",
+  "holdings": [
+    {
+      "ticker": "AAPL",
+      "shares": 10,
+      "cost_basis": 185.50
+    },
+    {
+      "ticker": "VOO",
+      "shares": 5,
+      "cost_basis": 410.00
+    }
+  ]
+}

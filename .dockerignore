@@ -6,3 +6,6 @@ __pycache__/
 .gitignore
 README.md
 sample_email.html
+docs/
+tests/
+LICENSE

@@ -1,6 +1,12 @@
 """Verify the integrated pipeline: framework injection + web context + parsing."""
 import json
+import os
+import sys
 from unittest.mock import MagicMock, patch
+
+# Make the src/ modules importable no matter where this test is run from.
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
 import analysis
 import web_enrich
 import frameworks

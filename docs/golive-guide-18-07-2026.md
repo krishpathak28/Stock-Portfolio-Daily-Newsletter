@@ -112,13 +112,16 @@ export TAVILY_API_KEY="tvly-..."
 export RESEND_API_KEY="re_..."
 export RECIPIENT_EMAIL="you@example.com"
 
-python3 data_fetch.py      # confirms Yahoo Finance is reachable + sector lookup
-python3 analysis.py        # confirms real Claude output quality
-python3 email_send.py      # sends a tiny test email — check your inbox
-python3 main.py            # runs the whole thing end-to-end
+python3 src/data_fetch.py      # confirms Yahoo Finance is reachable + sector lookup
+python3 src/analysis.py        # confirms real Claude output quality
+python3 src/email_send.py      # sends a tiny test email — check your inbox
+python3 src/main.py            # runs the whole thing end-to-end
+
+# and to run the test suite:
+python3 tests/test_integration.py
 ```
 
-Do this from a spot that can reach the internet (the earlier build sandbox couldn't, which is why live calls were never verified — this local run is the real first test).
+Run these **from the project root** (not from inside `src/`) so `portfolio.json` is found. Do it from a spot that can reach the internet (the earlier build sandbox couldn't, which is why live calls were never verified — this local run is the real first test).
 
 ---
 
